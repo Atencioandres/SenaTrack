@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - SenaTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <!-- Reemplazado logo de texto por imagen real -->
+                <img src="img\Logo_sena.png" alt="SenaTrack Logo" style="height: 45px; width: auto;">
+                <span>SenaTrack</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="login.html">Iniciar Sesión</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenedor de registro mejorado con diseño centrado y atractivo -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <!-- Reemplazado logo circular por imagen real -->
+                <img src="img\LogoST.png" alt="SenaTrack Logo" style="height: 80px; width: auto; margin-bottom: 1rem;">
+                <h1 class="auth-title">Crear Cuenta</h1>
+                <p class="auth-description">Regístrate en SenaTrack para comenzar</p>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <form id="registroForm">
+                <div class="form-group">
+                    <label class="form-label" for="tipoUsuario">Tipo de Usuario</label>
+                    <select class="form-select" id="tipoUsuario" required>
+                        <option value="">Seleccione un tipo</option>
+                        <option value="aprendiz">Aprendiz</option>
+                        <option value="bienestar">Personal de Bienestar</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="nombre">Nombre Completo</label>
+                    <input type="text" class="form-input" id="nombre" placeholder="Ej: Juan Pérez" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="correo">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="correo" placeholder="correo@ejemplo.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="usuario">Nombre de Usuario</label>
+                    <input type="text" class="form-input" id="usuario" placeholder="Ej: jperez" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="contrasena">Contraseña</label>
+                    <input type="password" class="form-input" id="contrasena" placeholder="Mínimo 6 caracteres" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmarContrasena">Confirmar Contraseña</label>
+                    <input type="password" class="form-input" id="confirmarContrasena" placeholder="Repite tu contraseña" required>
+                </div>
+
+                <!-- Campos adicionales para Aprendiz -->
+                <div id="camposAprendiz" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label" for="programa">Programa de Formación</label>
+                        <select class="form-select" id="programa">
+                            <option value="">Seleccione un programa</option>
+                            <!-- Se llenará dinámicamente -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="ficha">Número de Ficha</label>
+                        <input type="number" class="form-input" id="ficha">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="telefono">Teléfono</label>
+                        <input type="tel" class="form-input" id="telefono">
+                    </div>
+                </div>
+
+                <!-- Campos adicionales para Personal de Bienestar -->
+                <div id="camposBienestar" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label" for="especialidad">Especialidad</label>
+                        <select class="form-select" id="especialidad">
+                            <option value="">Seleccione una especialidad</option>
+                            <option value="Psicología">Psicología</option>
+                            <option value="Trabajo Social">Trabajo Social</option>
+                            <option value="Orientación Vocacional">Orientación Vocacional</option>
+                            <option value="Psicología Clínica">Psicología Clínica</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Registrarse</button>
+            </form>
+
+            <p class="text-center mt-3">
+                ¿Ya tienes cuenta? <a href="login.html" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">Inicia sesión aquí</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const programasDefault = [
+            {id: 1, nombre: 'Análisis y Desarrollo de Software'},
+            {id: 2, nombre: 'Mecanización Agrícola'},
+            {id: 3, nombre: 'Acuicultura'},
+            {id: 4, nombre: 'Especies Menores'},
+            {id: 5, nombre: 'Empresas Pecuarias'}
+        ];
+        
+        function cargarProgramas() {
+            const programas = JSON.parse(localStorage.getItem('programas') || JSON.stringify(programasDefault));
+            const select = document.getElementById('programa');
+            select.innerHTML = '<option value="">Seleccione un programa</option>';
+            programas.forEach(programa => {
+                const option = document.createElement('option');
+                option.value = programa.id || programa.id_programa;
+                option.textContent = programa.nombre || programa.nombre_programa;
+                select.appendChild(option);
+            });
+        }
+        
+        cargarProgramas();
+        
+        document.getElementById('tipoUsuario').addEventListener('change', function() {
+            const tipo = this.value;
+            const camposAprendiz = document.getElementById('camposAprendiz');
+            const camposBienestar = document.getElementById('camposBienestar');
+            
+            camposAprendiz.classList.add('hidden');
+            camposBienestar.classList.add('hidden');
+            
+            if (tipo === 'aprendiz') {
+                camposAprendiz.classList.remove('hidden');
+                document.getElementById('programa').required = true;
+                document.getElementById('ficha').required = true;
+                document.getElementById('telefono').required = true;
+            } else if (tipo === 'bienestar') {
+                camposBienestar.classList.remove('hidden');
+                document.getElementById('especialidad').required = true;
+            }
+        });
+
+        document.getElementById('registroForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const tipoUsuario = document.getElementById('tipoUsuario').value;
+            const nombre = document.getElementById('nombre').value;
+            const correo = document.getElementById('correo').value;
+            const usuario = document.getElementById('usuario').value;
+            const contrasena = document.getElementById('contrasena').value;
+            const confirmarContrasena = document.getElementById('confirmarContrasena').value;
+            
+            if (contrasena !== confirmarContrasena) {
+                mostrarAlerta('Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            const nuevoUsuario = {
+                id: Date.now().toString(),
+                tipoUsuario: tipoUsuario,
+                nombre: nombre,
+                correo: correo,
+                usuario: usuario,
+                contrasena: contrasena,
+                fechaRegistro: new Date().toISOString()
+            };
+            
+            if (tipoUsuario === 'aprendiz') {
+                nuevoUsuario.programa = document.getElementById('programa').value;
+                nuevoUsuario.ficha = document.getElementById('ficha').value;
+                nuevoUsuario.telefono = document.getElementById('telefono').value;
+            } else if (tipoUsuario === 'bienestar') {
+                nuevoUsuario.especialidad = document.getElementById('especialidad').value;
+            }
+            
+            let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            usuarios.push(nuevoUsuario);
+            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            
+            mostrarAlerta('¡Registro exitoso! Redirigiendo al inicio de sesión...', 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        });
+        
+        function mostrarAlerta(mensaje, tipo) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = tipo === 'success' ? 'alert-success' : 'alert-error';
+            alertContainer.innerHTML = `<div class="alert ${alertClass}">${mensaje}</div>`;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

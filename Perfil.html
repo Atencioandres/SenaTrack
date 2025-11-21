@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - SenaTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard">
+    <div class="dashboard-header">
+        <div class="dashboard-nav">
+            <a href="#" onclick="volverDashboard()" class="logo">
+                <img src="img\LogoST.png" alt="SenaTrack Logo" style="height: 50px; width: auto;">
+                <span>SenaTrack</span>
+            </a>
+            <div class="user-info">
+                <span id="nombreUsuario"></span>
+                <div class="user-avatar" id="avatarUsuario"></div>
+                <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <button onclick="volverDashboard()" class="btn btn-secondary" style="padding: 0.5rem 1rem;">← Volver</button>
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">Mi Perfil</h1>
+                <p style="color: var(--color-muted-foreground);">Gestiona tu información personal</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3" style="gap: 2rem;">
+            <!-- Columna izquierda: Foto de perfil -->
+            <div>
+                <div class="card">
+                    <div style="text-align: center; padding: 2rem 1rem;">
+                        <div style="position: relative; display: inline-block; margin-bottom: 1rem;">
+                            <div id="fotoPerfil" style="width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 4rem; color: white; font-weight: 700; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+                            <input type="file" id="inputFoto" accept="image/*" style="display: none;" onchange="cambiarFoto(event)">
+                            <button onclick="document.getElementById('inputFoto').click()" class="btn btn-primary" style="position: absolute; bottom: 0; right: 0; border-radius: 50%; width: 40px; height: 40px; padding: 0; font-size: 1.25rem;">📷</button>
+                        </div>
+                        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.25rem;" id="perfilNombre"></h3>
+                        <p style="color: var(--color-muted-foreground); font-size: 0.875rem;" id="perfilTipo"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha: Formulario de edición -->
+            <div style="grid-column: span 2;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Información Personal</h2>
+                    </div>
+                    <form id="formPerfil">
+                        <div class="grid grid-cols-2">
+                            <div class="form-group">
+                                <label class="form-label">Nombre Completo</label>
+                                <input type="text" class="form-input" id="editNombre" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-input" id="editCorreo" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Usuario</label>
+                            <input type="text" class="form-input" id="editUsuario" disabled style="background-color: var(--color-muted); cursor: not-allowed;">
+                            <p style="font-size: 0.875rem; color: var(--color-muted-foreground); margin-top: 0.25rem;">El nombre de usuario no se puede modificar</p>
+                        </div>
+
+                        <!-- Campos específicos para aprendiz -->
+                        <div id="camposAprendiz" class="hidden">
+                            <div class="grid grid-cols-2">
+                                <div class="form-group">
+                                    <label class="form-label">Programa de Formación</label>
+                                    <input type="text" class="form-input" id="editPrograma">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Ficha</label>
+                                    <input type="text" class="form-input" id="editFicha">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Teléfono</label>
+                                <input type="tel" class="form-input" id="editTelefono">
+                            </div>
+                        </div>
+
+                        <!-- Campos específicos para bienestar -->
+                        <div id="camposBienestar" class="hidden">
+                            <div class="form-group">
+                                <label class="form-label">Especialidad</label>
+                                <input type="text" class="form-input" id="editEspecialidad">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </form>
+                </div>
+
+                <!-- Cambiar contraseña -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h2 class="card-title">Cambiar Contraseña</h2>
+                    </div>
+                    <form id="formContrasena">
+                        <div class="form-group">
+                            <label class="form-label">Contraseña Actual</label>
+                            <input type="password" class="form-input" id="contrasenaActual" required>
+                        </div>
+                        <div class="grid grid-cols-2">
+                            <div class="form-group">
+                                <label class="form-label">Nueva Contraseña</label>
+                                <input type="password" class="form-input" id="contrasenaNueva" required minlength="6">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirmar Contraseña</label>
+                                <input type="password" class="form-input" id="contrasenaConfirmar" required minlength="6">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Actualizar Contraseña</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Verificar autenticación
+        verificarAutenticacion();
+        
+        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+        
+        // Cargar información del header
+        document.getElementById('nombreUsuario').textContent = usuarioActual.nombre;
+        document.getElementById('avatarUsuario').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
+        
+        // Cargar foto de perfil
+        cargarFotoPerfil();
+        
+        // Cargar información del perfil
+        document.getElementById('perfilNombre').textContent = usuarioActual.nombre;
+        document.getElementById('perfilTipo').textContent = obtenerNombreTipo(usuarioActual.tipoUsuario);
+        
+        // Cargar datos en el formulario
+        document.getElementById('editNombre').value = usuarioActual.nombre;
+        document.getElementById('editCorreo').value = usuarioActual.correo;
+        document.getElementById('editUsuario').value = usuarioActual.usuario;
+        
+        // Mostrar campos específicos según tipo de usuario
+        if (usuarioActual.tipoUsuario === 'aprendiz') {
+            document.getElementById('camposAprendiz').classList.remove('hidden');
+            document.getElementById('editPrograma').value = usuarioActual.programa || '';
+            document.getElementById('editFicha').value = usuarioActual.ficha || '';
+            document.getElementById('editTelefono').value = usuarioActual.telefono || '';
+        } else if (usuarioActual.tipoUsuario === 'bienestar') {
+            document.getElementById('camposBienestar').classList.remove('hidden');
+            document.getElementById('editEspecialidad').value = usuarioActual.especialidad || '';
+        }
+        
+        function obtenerNombreTipo(tipo) {
+            const tipos = {
+                'admin': 'Administrador',
+                'bienestar': 'Personal de Bienestar',
+                'aprendiz': 'Aprendiz'
+            };
+            return tipos[tipo] || tipo;
+        }
+        
+        function volverDashboard() {
+            const dashboards = {
+                'admin': 'dashboard-admin.html',
+                'bienestar': 'dashboard-bienestar.html',
+                'aprendiz': 'dashboard-aprendiz.html'
+            };
+            window.location.href = dashboards[usuarioActual.tipoUsuario];
+        }
+        
+        function cargarFotoPerfil() {
+            const fotoDiv = document.getElementById('fotoPerfil');
+            if (usuarioActual.fotoPerfil) {
+                fotoDiv.style.backgroundImage = `url(${usuarioActual.fotoPerfil})`;
+                fotoDiv.style.backgroundSize = 'cover';
+                fotoDiv.style.backgroundPosition = 'center';
+                fotoDiv.textContent = '';
+            } else {
+                fotoDiv.textContent = usuarioActual.nombre.charAt(0).toUpperCase();
+            }
+        }
+        
+        function cambiarFoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    usuarioActual.fotoPerfil = e.target.result;
+                    actualizarUsuarioEnStorage();
+                    cargarFotoPerfil();
+                    alert('Foto de perfil actualizada exitosamente');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Guardar cambios del perfil
+        document.getElementById('formPerfil').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            usuarioActual.nombre = document.getElementById('editNombre').value;
+            usuarioActual.correo = document.getElementById('editCorreo').value;
+            
+            if (usuarioActual.tipoUsuario === 'aprendiz') {
+                usuarioActual.programa = document.getElementById('editPrograma').value;
+                usuarioActual.ficha = document.getElementById('editFicha').value;
+                usuarioActual.telefono = document.getElementById('editTelefono').value;
+            } else if (usuarioActual.tipoUsuario === 'bienestar') {
+                usuarioActual.especialidad = document.getElementById('editEspecialidad').value;
+            }
+            
+            actualizarUsuarioEnStorage();
+            
+            // Actualizar header
+            document.getElementById('nombreUsuario').textContent = usuarioActual.nombre;
+            document.getElementById('perfilNombre').textContent = usuarioActual.nombre;
+            
+            alert('Perfil actualizado exitosamente');
+        });
+        
+        // Cambiar contraseña
+        document.getElementById('formContrasena').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const contrasenaActual = document.getElementById('contrasenaActual').value;
+            const contrasenaNueva = document.getElementById('contrasenaNueva').value;
+            const contrasenaConfirmar = document.getElementById('contrasenaConfirmar').value;
+            
+            if (contrasenaActual !== usuarioActual.contrasena) {
+                alert('La contraseña actual es incorrecta');
+                return;
+            }
+            
+            if (contrasenaNueva !== contrasenaConfirmar) {
+                alert('Las contraseñas nuevas no coinciden');
+                return;
+            }
+            
+            if (contrasenaNueva.length < 6) {
+                alert('La contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+            
+            usuarioActual.contrasena = contrasenaNueva;
+            actualizarUsuarioEnStorage();
+            
+            this.reset();
+            alert('Contraseña actualizada exitosamente');
+        });
+        
+        function actualizarUsuarioEnStorage() {
+            // Actualizar en usuarioActual
+            localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
+            
+            // Actualizar en la lista de usuarios
+            let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            const index = usuarios.findIndex(u => u.id === usuarioActual.id);
+            if (index !== -1) {
+                usuarios[index] = usuarioActual;
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            }
+        }
+    </script>
+</body>
+</html>

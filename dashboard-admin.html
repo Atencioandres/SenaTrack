@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrador - SenaTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard">
+    <div class="dashboard-header">
+        <div class="dashboard-nav">
+            <a href="dashboard-admin.html" class="logo">
+                <!-- Reemplazado logo de texto por imagen real -->
+                <img src="img\LogoST.png" alt="SenaTrack Logo" style="height: 50px; width: auto;">
+                <span>SenaTrack</span>
+            </a>
+            <div class="user-info">
+                <span id="nombreUsuario"></span>
+                <div class="user-avatar" id="avatarUsuario"></div>
+                <!-- Agregado botón para acceder al perfil -->
+                <button class="btn btn-secondary" onclick="window.location.href='perfil.html'" style="margin-right: 0.5rem;">Mi Perfil</button>
+                <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Panel de Administrador</h1>
+        <p style="color: var(--color-muted-foreground); margin-bottom: 2rem;">Gestiona usuarios y configuración del sistema</p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Usuarios</div>
+                <div class="stat-value" id="totalUsuarios">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Aprendices</div>
+                <div class="stat-value" id="totalAprendices">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Personal Bienestar</div>
+                <div class="stat-value" id="totalBienestar">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Comparendos</div>
+                <div class="stat-value" id="totalComparendos">0</div>
+            </div>
+        </div>
+
+        <!-- Agregada sección de gestión de programas -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h2 class="card-title">Programas de Formación</h2>
+                <button class="btn btn-primary" onclick="mostrarModalPrograma()">Agregar Programa</button>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre del Programa</th>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaProgramas">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Gestión de Usuarios</h2>
+                <!-- Agregado botón para crear administradores -->
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary" onclick="mostrarModalAdmin()">Agregar Administrador</button>
+                    <button class="btn btn-primary" onclick="mostrarModalUsuario()">Agregar Usuario</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Usuario</th>
+                            <th>Correo</th>
+                            <th>Tipo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuarios">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Agregado botón para generar informes -->
+        <div style="margin-top: 2rem;">
+            <button class="btn btn-primary" onclick="window.location.href='informes.html'" style="width: 100%; padding: 1rem; font-size: 1.125rem;">
+                📊 Generar Informes
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar programa -->
+    <div id="modalPrograma" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="tituloModalPrograma">Agregar Programa</h2>
+                <button class="modal-close" onclick="cerrarModalPrograma()">&times;</button>
+            </div>
+            <form id="formPrograma">
+                <input type="hidden" id="idPrograma">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Programa</label>
+                    <input type="text" class="form-input" id="nombrePrograma" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-input" id="descripcionPrograma" rows="3"></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalPrograma()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar usuario -->
+    <div id="modalUsuario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Agregar Usuario</h2>
+                <button class="modal-close" onclick="cerrarModalUsuario()">&times;</button>
+            </div>
+            <form id="formUsuario">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Usuario</label>
+                    <select class="form-select" id="modalTipoUsuario" required>
+                        <option value="aprendiz">Aprendiz</option>
+                        <option value="bienestar">Personal de Bienestar</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-input" id="modalNombre" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" class="form-input" id="modalUsuario" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo</label>
+                    <input type="email" class="form-input" id="modalCorreo" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" class="form-input" id="modalContrasena" required>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalUsuario()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar usuario -->
+    <div id="modalAdmin" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Agregar Administrador</h2>
+                <button class="modal-close" onclick="cerrarModalAdmin()">&times;</button>
+            </div>
+            <form id="formAdmin">
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-input" id="modalNombreAdmin" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" class="form-input" id="modalUsuarioAdmin" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo</label>
+                    <input type="email" class="form-input" id="modalCorreoAdmin" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" class="form-input" id="modalContrasenaAdmin" required>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">Crear Administrador</button>
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalAdmin()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para editar usuario existente -->
+    <div id="modalEditarUsuario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Editar Usuario</h2>
+                <button class="modal-close" onclick="cerrarModalEditarUsuario()">&times;</button>
+            </div>
+            <form id="formEditarUsuario">
+                <input type="hidden" id="editarUsuarioId">
+                
+                <div class="form-group">
+                    <label class="form-label">Tipo de Usuario</label>
+                    <select class="form-select" id="editarTipoUsuario" required>
+                        <option value="aprendiz">Aprendiz</option>
+                        <option value="bienestar">Personal de Bienestar</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-input" id="editarNombre" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" class="form-input" id="editarUsuario" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="editarCorreo" required>
+                </div>
+
+                <div id="camposAprendiz" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Programa de Formación</label>
+                        <select class="form-select" id="editarPrograma">
+                            <!-- Se llenará dinámicamente -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Número de Ficha</label>
+                        <input type="number" class="form-input" id="editarFicha">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" class="form-input" id="editarTelefono">
+                    </div>
+                </div>
+
+                <div id="camposBienestar" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Especialidad</label>
+                        <input type="text" class="form-input" id="editarEspecialidad">
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalEditarUsuario()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para restablecer contraseña -->
+    <div id="modalRestablecerContrasena" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Restablecer Contraseña</h2>
+                <button class="modal-close" onclick="cerrarModalRestablecerContrasena()">&times;</button>
+            </div>
+            <form id="formRestablecerContrasena">
+                <input type="hidden" id="restablecerUsuarioId">
+                
+                <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                    <strong>Usuario:</strong> <span id="restablecerUsuarioNombre"></span><br>
+                    <strong>Correo:</strong> <span id="restablecerUsuarioCorreo"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nueva Contraseña</label>
+                    <input type="password" class="form-input" id="nuevaContrasena" required minlength="6">
+                    <small>Mínimo 6 caracteres</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Confirmar Contraseña</label>
+                    <input type="password" class="form-input" id="confirmarContrasena" required minlength="6">
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">Restablecer Contraseña</button>
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalRestablecerContrasena()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Verificar autenticación
+        verificarAutenticacion('admin');
+        
+        // Cargar información del usuario
+        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+        document.getElementById('nombreUsuario').textContent = usuarioActual.nombre;
+        document.getElementById('avatarUsuario').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
+        
+        // Cargar estadísticas
+        cargarEstadisticas();
+        cargarUsuarios();
+        cargarProgramas(); // Cargar programas
+        
+        function cargarEstadisticas() {
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            const comparendos = JSON.parse(localStorage.getItem('comparendos') || '[]');
+            
+            document.getElementById('totalUsuarios').textContent = usuarios.length;
+            document.getElementById('totalAprendices').textContent = usuarios.filter(u => u.tipoUsuario === 'aprendiz').length;
+            document.getElementById('totalBienestar').textContent = usuarios.filter(u => u.tipoUsuario === 'bienestar').length;
+            document.getElementById('totalComparendos').textContent = comparendos.length;
+        }
+        
+        function cargarProgramas() {
+            const programasDefault = [
+                {id: 1, nombre: 'Análisis y Desarrollo de Software', descripcion: 'Programa técnico enfocado en desarrollo de aplicaciones', estado: 'activo'},
+                {id: 2, nombre: 'Mecanización Agrícola', descripcion: 'Programa técnico en maquinaria y equipos agrícolas', estado: 'activo'},
+                {id: 3, nombre: 'Acuicultura', descripcion: 'Programa técnico en cultivo de especies acuáticas', estado: 'activo'},
+                {id: 4, nombre: 'Especies Menores', descripcion: 'Programa técnico en producción de especies menores', estado: 'activo'},
+                {id: 5, nombre: 'Empresas Pecuarias', descripcion: 'Programa técnico en gestión de empresas pecuarias', estado: 'activo'}
+            ];
+            
+            let programas = JSON.parse(localStorage.getItem('programas') || JSON.stringify(programasDefault));
+            const tbody = document.getElementById('tablaProgramas');
+            
+            tbody.innerHTML = programas.map(programa => `
+                <tr>
+                    <td>${programa.nombre}</td>
+                    <td>${programa.descripcion || 'Sin descripción'}</td>
+                    <td><span class="badge badge-success">${programa.estado}</span></td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="editarPrograma(${programa.id})">Editar</button>
+                        <button class="btn btn-destructive" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="eliminarPrograma(${programa.id})">Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function mostrarModalPrograma() {
+            document.getElementById('modalPrograma').classList.add('active');
+            document.getElementById('tituloModalPrograma').textContent = 'Agregar Programa';
+            document.getElementById('formPrograma').reset();
+            document.getElementById('idPrograma').value = '';
+        }
+        
+        function cerrarModalPrograma() {
+            document.getElementById('modalPrograma').classList.remove('active');
+        }
+        
+        function editarPrograma(id) {
+            const programas = JSON.parse(localStorage.getItem('programas') || '[]');
+            const programa = programas.find(p => p.id == id);
+            
+            if (programa) {
+                document.getElementById('idPrograma').value = programa.id;
+                document.getElementById('nombrePrograma').value = programa.nombre;
+                document.getElementById('descripcionPrograma').value = programa.descripcion || '';
+                document.getElementById('tituloModalPrograma').textContent = 'Editar Programa';
+                document.getElementById('modalPrograma').classList.add('active');
+            }
+        }
+        
+        function eliminarPrograma(id) {
+            if (confirm('¿Está seguro de eliminar este programa?')) {
+                let programas = JSON.parse(localStorage.getItem('programas') || '[]');
+                programas = programas.filter(p => p.id != id);
+                localStorage.setItem('programas', JSON.stringify(programas));
+                cargarProgramas();
+                alert('Programa eliminado exitosamente');
+            }
+        }
+        
+        document.getElementById('formPrograma').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const idPrograma = document.getElementById('idPrograma').value;
+            const nuevoPrograma = {
+                id: idPrograma || Date.now(),
+                nombre: document.getElementById('nombrePrograma').value,
+                descripcion: document.getElementById('descripcionPrograma').value,
+                estado: 'activo'
+            };
+            
+            let programas = JSON.parse(localStorage.getItem('programas') || '[]');
+            
+            if (idPrograma) {
+                const index = programas.findIndex(p => p.id == idPrograma);
+                if (index !== -1) {
+                    programas[index] = nuevoPrograma;
+                }
+            } else {
+                programas.push(nuevoPrograma);
+            }
+            
+            localStorage.setItem('programas', JSON.stringify(programas));
+            cerrarModalPrograma();
+            cargarProgramas();
+            alert('Programa guardado exitosamente');
+        });
+        
+        function cargarUsuarios() {
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            const tbody = document.getElementById('tablaUsuarios');
+            
+            tbody.innerHTML = usuarios.map(usuario => `
+                <tr>
+                    <td>${usuario.nombre}</td>
+                    <td>${usuario.usuario}</td>
+                    <td>${usuario.correo}</td>
+                    <td><span class="badge badge-info">${usuario.tipoUsuario}</span></td>
+                    <td>
+                        <!-- Agregados botones para editar y restablecer contraseña -->
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem; margin-right: 0.5rem;" onclick="editarUsuario('${usuario.id}')">Editar</button>
+                        <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem; margin-right: 0.5rem;" onclick="restablecerContrasena('${usuario.id}')">Restablecer Contraseña</button>
+                        <button class="btn btn-destructive" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="eliminarUsuario('${usuario.id}')">Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function mostrarModalUsuario() {
+            document.getElementById('modalUsuario').classList.add('active');
+        }
+        
+        function cerrarModalUsuario() {
+            document.getElementById('modalUsuario').classList.remove('active');
+            document.getElementById('formUsuario').reset();
+        }
+        
+        function mostrarModalAdmin() {
+            document.getElementById('modalAdmin').classList.add('active');
+        }
+        
+        function cerrarModalAdmin() {
+            document.getElementById('modalAdmin').classList.remove('active');
+            document.getElementById('formAdmin').reset();
+        }
+        
+        function editarUsuario(id) {
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            const usuario = usuarios.find(u => u.id === id);
+            
+            if (usuario) {
+                document.getElementById('editarUsuarioId').value = usuario.id;
+                document.getElementById('editarTipoUsuario').value = usuario.tipoUsuario;
+                document.getElementById('editarNombre').value = usuario.nombre;
+                document.getElementById('editarUsuario').value = usuario.usuario;
+                document.getElementById('editarCorreo').value = usuario.correo;
+                
+                // Cargar programas en el select
+                const programas = JSON.parse(localStorage.getItem('programas') || '[]');
+                const selectPrograma = document.getElementById('editarPrograma');
+                selectPrograma.innerHTML = programas.map(p => 
+                    `<option value="${p.id}" ${usuario.programa == p.id ? 'selected' : ''}>${p.nombre}</option>`
+                ).join('');
+                
+                // Mostrar campos específicos según tipo de usuario
+                mostrarCamposEdicion(usuario.tipoUsuario);
+                
+                if (usuario.tipoUsuario === 'aprendiz') {
+                    document.getElementById('editarPrograma').value = usuario.programa || '';
+                    document.getElementById('editarFicha').value = usuario.ficha || '';
+                    document.getElementById('editarTelefono').value = usuario.telefono || '';
+                } else if (usuario.tipoUsuario === 'bienestar') {
+                    document.getElementById('editarEspecialidad').value = usuario.especialidad || '';
+                }
+                
+                document.getElementById('modalEditarUsuario').classList.add('active');
+            }
+        }
+        
+        function mostrarCamposEdicion(tipo) {
+            document.getElementById('camposAprendiz').style.display = tipo === 'aprendiz' ? 'block' : 'none';
+            document.getElementById('camposBienestar').style.display = tipo === 'bienestar' ? 'block' : 'none';
+        }
+        
+        document.getElementById('editarTipoUsuario').addEventListener('change', function() {
+            mostrarCamposEdicion(this.value);
+        });
+        
+        function cerrarModalEditarUsuario() {
+            document.getElementById('modalEditarUsuario').classList.remove('active');
+            document.getElementById('formEditarUsuario').reset();
+        }
+        
+        document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('editarUsuarioId').value;
+            const tipoUsuario = document.getElementById('editarTipoUsuario').value;
+            
+            let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            const index = usuarios.findIndex(u => u.id === id);
+            
+            if (index !== -1) {
+                usuarios[index].tipoUsuario = tipoUsuario;
+                usuarios[index].nombre = document.getElementById('editarNombre').value;
+                usuarios[index].usuario = document.getElementById('editarUsuario').value;
+                usuarios[index].correo = document.getElementById('editarCorreo').value;
+                
+                if (tipoUsuario === 'aprendiz') {
+                    usuarios[index].programa = document.getElementById('editarPrograma').value;
+                    usuarios[index].ficha = document.getElementById('editarFicha').value;
+                    usuarios[index].telefono = document.getElementById('editarTelefono').value;
+                } else if (tipoUsuario === 'bienestar') {
+                    usuarios[index].especialidad = document.getElementById('editarEspecialidad').value;
+                }
+                
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+                
+                // Actualizar usuario actual si es el mismo
+                const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+                if (usuarioActual.id === id) {
+                    localStorage.setItem('usuarioActual', JSON.stringify(usuarios[index]));
+                }
+                
+                cerrarModalEditarUsuario();
+                cargarEstadisticas();
+                cargarUsuarios();
+                alert('Usuario actualizado exitosamente');
+            }
+        });
+        
+        function restablecerContrasena(id) {
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            const usuario = usuarios.find(u => u.id === id);
+            
+            if (usuario) {
+                document.getElementById('restablecerUsuarioId').value = usuario.id;
+                document.getElementById('restablecerUsuarioNombre').textContent = usuario.nombre;
+                document.getElementById('restablecerUsuarioCorreo').textContent = usuario.correo;
+                document.getElementById('modalRestablecerContrasena').classList.add('active');
+            }
+        }
+        
+        function cerrarModalRestablecerContrasena() {
+            document.getElementById('modalRestablecerContrasena').classList.remove('active');
+            document.getElementById('formRestablecerContrasena').reset();
+        }
+        
+        document.getElementById('formRestablecerContrasena').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nuevaContrasena = document.getElementById('nuevaContrasena').value;
+            const confirmarContrasena = document.getElementById('confirmarContrasena').value;
+            
+            if (nuevaContrasena !== confirmarContrasena) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+            
+            if (nuevaContrasena.length < 6) {
+                alert('La contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+            
+            const id = document.getElementById('restablecerUsuarioId').value;
+            let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            const index = usuarios.findIndex(u => u.id === id);
+            
+            if (index !== -1) {
+                usuarios[index].contrasena = nuevaContrasena;
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+                
+                cerrarModalRestablecerContrasena();
+                alert('Contraseña restablecida exitosamente');
+            }
+        });
+        
+        document.getElementById('formAdmin').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nuevoAdmin = {
+                id: Date.now().toString(),
+                tipoUsuario: 'admin',
+                nombre: document.getElementById('modalNombreAdmin').value,
+                usuario: document.getElementById('modalUsuarioAdmin').value,
+                correo: document.getElementById('modalCorreoAdmin').value,
+                contrasena: document.getElementById('modalContrasenaAdmin').value,
+                fechaRegistro: new Date().toISOString()
+            };
+            
+            let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            usuarios.push(nuevoAdmin);
+            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            
+            cerrarModalAdmin();
+            cargarEstadisticas();
+            cargarUsuarios();
+            alert('Administrador creado exitosamente');
+        });
+        
+        document.getElementById('formUsuario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nuevoUsuario = {
+                id: Date.now().toString(),
+                tipoUsuario: document.getElementById('modalTipoUsuario').value,
+                nombre: document.getElementById('modalNombre').value,
+                usuario: document.getElementById('modalUsuario').value,
+                correo: document.getElementById('modalCorreo').value,
+                contrasena: document.getElementById('modalContrasena').value,
+                fechaRegistro: new Date().toISOString()
+            };
+            
+            let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            usuarios.push(nuevoUsuario);
+            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            
+            cerrarModalUsuario();
+            cargarEstadisticas();
+            cargarUsuarios();
+            alert('Usuario agregado exitosamente');
+        });
+        
+        function eliminarUsuario(id) {
+            if (confirm('¿Está seguro de eliminar este usuario?')) {
+                let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+                usuarios = usuarios.filter(u => u.id !== id);
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+                cargarEstadisticas();
+                cargarUsuarios();
+                alert('Usuario eliminado exitosamente');
+            }
+        }
+        
+        function cerrarSesion() {
+            localStorage.removeItem('usuarioActual');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

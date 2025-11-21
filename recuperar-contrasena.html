@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - SenaTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="logo-circle">
+                    <span>ST</span>
+                </div>
+            </div>
+            <h1>Recuperar Contraseña</h1>
+            <p class="auth-subtitle">Ingresa tu correo electrónico para recibir un código de verificación</p>
+
+            <!-- Paso 1: Ingresar correo electrónico -->
+            <div id="step1" class="recovery-step">
+                <form id="emailForm">
+                    <div class="form-group">
+                        <label for="correo">Correo Electrónico</label>
+                        <div class="input-with-icon">
+                            <span class="input-icon">📧</span>
+                            <input type="email" id="correo" name="correo" required 
+                                   placeholder="ejemplo@sena.edu.co">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar Código al Correo</button>
+                </form>
+            </div>
+
+            <!-- Paso 2: Ingresar código de verificación -->
+            <div id="step2" class="recovery-step" style="display: none;">
+                <div class="success-message">
+                    <div class="success-icon">✓</div>
+                    <p>Se ha enviado un código de verificación a tu correo electrónico</p>
+                    <p class="email-display" id="emailDisplay"></p>
+                </div>
+                <form id="codeForm">
+                    <div class="form-group">
+                        <label for="codigo">Código de Verificación</label>
+                        <div class="input-with-icon">
+                            <span class="input-icon">🔑</span>
+                            <input type="text" id="codigo" name="codigo" required 
+                                   placeholder="Ingresa el código de 6 dígitos" maxlength="6">
+                        </div>
+                        <small>El código expira en 15 minutos</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Verificar Código</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Volver</button>
+                </form>
+            </div>
+
+            <!-- Paso 3: Cambiar contraseña -->
+            <div id="step3" class="recovery-step" style="display: none;">
+                <div class="success-message">
+                    <div class="success-icon">✓</div>
+                    <p>Código verificado correctamente</p>
+                </div>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label for="nuevaContrasena">Nueva Contraseña</label>
+                        <div class="input-with-icon">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="nuevaContrasena" name="nuevaContrasena" required 
+                                   minlength="6" placeholder="Mínimo 6 caracteres">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmarContrasena">Confirmar Contraseña</label>
+                        <div class="input-with-icon">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="confirmarContrasena" name="confirmarContrasena" required 
+                                   minlength="6" placeholder="Repite la contraseña">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                </form>
+            </div>
+
+            <div class="auth-footer">
+                <a href="login.html">Volver al inicio de sesión</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log("[v0] Página de recuperación cargada");
+        
+        let currentEmail = null;
+        let currentCode = null;
+
+        document.getElementById('emailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log("[v0] Formulario de email enviado");
+            
+            const correo = document.getElementById('correo').value;
+            console.log("[v0] Correo ingresado:", correo);
+
+            try {
+                console.log("[v0] Enviando solicitud a api/enviar-codigo.php");
+                const response = await fetch('api/enviar-codigo.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo })
+                });
+
+                console.log("[v0] Respuesta recibida:", response.status);
+                const data = await response.json();
+                console.log("[v0] Datos recibidos:", data);
+
+                if (data.success) {
+                    currentEmail = correo;
+                    document.getElementById('emailDisplay').textContent = correo;
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').style.display = 'block';
+                    
+                    // Mostrar el código en consola (solo para desarrollo)
+                    if (data.codigo_debug) {
+                        console.log('[v0] Código de verificación:', data.codigo_debug);
+                        alert('DESARROLLO: Tu código es ' + data.codigo_debug + ' (revisa la consola)');
+                    }
+                } else {
+                    console.error("[v0] Error en respuesta:", data.message);
+                    alert(data.message || 'Error al enviar código');
+                }
+            } catch (error) {
+                console.error('[v0] Error al enviar código:', error);
+                alert('Error de conexión. Verifica que Apache y MySQL estén corriendo en XAMPP.');
+            }
+        });
+
+        document.getElementById('codeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log("[v0] Formulario de código enviado");
+            
+            const codigo = document.getElementById('codigo').value;
+            console.log("[v0] Código ingresado:", codigo);
+
+            try {
+                console.log("[v0] Verificando código...");
+                const response = await fetch('api/verificar-codigo.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: currentEmail, codigo })
+                });
+
+                console.log("[v0] Respuesta recibida:", response.status);
+                const data = await response.json();
+                console.log("[v0] Datos recibidos:", data);
+
+                if (data.success) {
+                    currentCode = codigo;
+                    document.getElementById('step2').style.display = 'none';
+                    document.getElementById('step3').style.display = 'block';
+                } else {
+                    console.error("[v0] Error:", data.message);
+                    alert(data.message || 'Código incorrecto o expirado');
+                }
+            } catch (error) {
+                console.error('[v0] Error al verificar código:', error);
+                alert('Error de conexión');
+            }
+        });
+
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log("[v0] Formulario de contraseña enviado");
+            
+            const nuevaContrasena = document.getElementById('nuevaContrasena').value;
+            const confirmar = document.getElementById('confirmarContrasena').value;
+
+            if (nuevaContrasena !== confirmar) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+
+            try {
+                console.log("[v0] Cambiando contraseña...");
+                const response = await fetch('api/cambiar-contrasena.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        correo: currentEmail,
+                        codigo: currentCode,
+                        nueva_contrasena: nuevaContrasena
+                    })
+                });
+
+                console.log("[v0] Respuesta recibida:", response.status);
+                const data = await response.json();
+                console.log("[v0] Datos recibidos:", data);
+
+                if (data.success) {
+                    alert('¡Contraseña cambiada exitosamente!');
+                    window.location.href = 'login.html';
+                } else {
+                    console.error("[v0] Error:", data.message);
+                    alert(data.message || 'Error al cambiar contraseña');
+                }
+            } catch (error) {
+                console.error('[v0] Error al cambiar contraseña:', error);
+                alert('Error de conexión');
+            }
+        });
+
+        function resetForm() {
+            console.log("[v0] Reiniciando formulario");
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step1').style.display = 'block';
+            document.getElementById('emailForm').reset();
+            currentEmail = null;
+            currentCode = null;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - SenaTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="img\Logo_sena.png" alt="SenaTrack Logo" style="height: 45px; width:auto;">
+                <span>SenaTrack</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="registro.html">Registrarse</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="img\LogoST.png" alt="SenaTrack Logo" style="height: 115px; width: auto; margin-bottom: 1rem;">
+                <h1 class="auth-title">Iniciar Sesión</h1>
+                <p class="auth-description">Accede a tu cuenta de SenaTrack</p>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="tipoUsuario">Tipo de Usuario</label>
+                    <select class="form-select" id="tipoUsuario" required>
+                        <option value="">Seleccione un tipo</option>
+                        <option value="$aprendiz">Aprendiz</option>
+                        <option value="$bienestar">Personal de Bienestar</option>
+                        <option value="$admin">Administrador</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="usuario">Usuario</label>
+                    <input type="text" class="form-input" id="usuario" placeholder="Ingresa tu usuario" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="contrasena">Contraseña</label>
+                    <input type="password" class="form-input" id="contrasena" placeholder="Ingresa tu contraseña" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Iniciar Sesión</button>
+            </form>
+
+            <div style="margin-top: 1rem; text-align: center;">
+                <a href="recuperar-contrasena.html" style="color: var(--color-muted-foreground); font-size: 0.9rem; text-decoration: none; display: block; margin-bottom: 0.5rem;">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
+
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border); text-align: center;">
+                <p style="margin: 0;">
+                    ¿No tienes cuenta? <a href="registro.html" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">Regístrate aquí</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const tipoUsuario = document.getElementById('tipoUsuario').value;
+            const usuario = document.getElementById('usuario').value;
+            const contrasena = document.getElementById('contrasena').value;
+            
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            
+            const usuarioEncontrado = usuarios.find(u => 
+                u.usuario === usuario && 
+                u.contrasena === contrasena && 
+                u.tipoUsuario === tipoUsuario
+            );
+            
+            if (usuarioEncontrado) {
+                localStorage.setItem('usuarioActual', JSON.stringify(usuarioEncontrado));
+                mostrarAlerta('Inicio de sesión exitoso. Redirigiendo...', 'success');
+                
+                setTimeout(() => {
+                    switch(tipoUsuario) {
+                        case 'admin':
+                            window.location.href = 'dashboard-admin.html';
+                            break;
+                        case 'bienestar':
+                            window.location.href = 'dashboard-bienestar.html';
+                            break;
+                        case 'aprendiz':
+                            window.location.href = 'dashboard-aprendiz.html';
+                            break;
+                    }
+                }, 1500);
+            } else {
+                mostrarAlerta('Usuario, contraseña o tipo de usuario incorrectos', 'error');
+            }
+        });
+        
+        function mostrarAlerta(mensaje, tipo) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = tipo === 'success' ? 'alert-success' : 'alert-error';
+            alertContainer.innerHTML = `<div class="alert ${alertClass}">${mensaje}</div>`;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

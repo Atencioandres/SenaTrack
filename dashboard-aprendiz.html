@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Aprendiz - SenaTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard">
+    <div class="dashboard-header">
+        <div class="dashboard-nav">
+            <a href="dashboard-aprendiz.html" class="logo">
+                <!-- Reemplazado logo de texto por imagen real -->
+                <img src="img\LogoST.png" alt="SenaTrack Logo" style="height: 50px; width: auto;">
+                <span>SenaTrack</span>
+            </a>
+            <div class="user-info">
+                <span id="nombreUsuario"></span>
+                <div class="user-avatar" id="avatarUsuario"></div>
+                <!-- Agregado botón para acceder al perfil -->
+                <button class="btn btn-secondary" onclick="window.location.href='perfil.html'" style="margin-right: 0.5rem;">Mi Perfil</button>
+                <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Mi Panel</h1>
+        <p style="color: var(--color-muted-foreground); margin-bottom: 2rem;">Consulta tu historial de comparendos</p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Comparendos</div>
+                <div class="stat-value" id="totalComparendos">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Este Mes</div>
+                <div class="stat-value" id="comparendosMes">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Estado</div>
+                <div id="estadoAprendiz" style="margin-top: 0.5rem;">
+                    <span class="badge badge-success">Sin Alertas</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="alertaComparendos" class="hidden">
+             Se mostrará si hay 2 o más comparendos 
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Mis Comparendos</h2>
+            </div>
+            
+            <div id="sinComparendos" class="hidden" style="padding: 3rem; text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem;">¡Excelente!</h3>
+                <p style="color: var(--color-muted-foreground);">No tienes comparendos registrados</p>
+            </div>
+
+            <div id="conComparendos" class="hidden">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Registrado Por</th>
+                                <!-- Agregado columna para evidencia -->
+                                <th>Evidencia</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaComparendos">
+                             Se llenará con JavaScript 
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2 class="card-title">Mi Información</h2>
+            </div>
+            <div class="grid grid-cols-2">
+                <div style="padding: 1rem;">
+                    <p style="color: var(--color-muted-foreground); font-size: 0.875rem; margin-bottom: 0.25rem;">Nombre</p>
+                    <p style="font-weight: 600;" id="infoNombre"></p>
+                </div>
+                <div style="padding: 1rem;">
+                    <p style="color: var(--color-muted-foreground); font-size: 0.875rem; margin-bottom: 0.25rem;">Correo</p>
+                    <p style="font-weight: 600;" id="infoCorreo"></p>
+                </div>
+                <div style="padding: 1rem;">
+                    <p style="color: var(--color-muted-foreground); font-size: 0.875rem; margin-bottom: 0.25rem;">Programa</p>
+                    <p style="font-weight: 600;" id="infoPrograma"></p>
+                </div>
+                <div style="padding: 1rem;">
+                    <p style="color: var(--color-muted-foreground); font-size: 0.875rem; margin-bottom: 0.25rem;">Ficha</p>
+                    <p style="font-weight: 600;" id="infoFicha"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Verificar autenticación
+        verificarAutenticacion('aprendiz');
+        
+        // Cargar información del usuario
+        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+        document.getElementById('nombreUsuario').textContent = usuarioActual.nombre;
+        document.getElementById('avatarUsuario').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
+        
+        // Cargar información personal
+        document.getElementById('infoNombre').textContent = usuarioActual.nombre;
+        document.getElementById('infoCorreo').textContent = usuarioActual.correo;
+        document.getElementById('infoPrograma').textContent = usuarioActual.programa || 'No especificado';
+        document.getElementById('infoFicha').textContent = usuarioActual.ficha || 'No especificado';
+        
+        // Cargar comparendos
+        cargarComparendos();
+        
+        function cargarComparendos() {
+            const comparendos = JSON.parse(localStorage.getItem('comparendos') || '[]');
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            const misComparendos = comparendos.filter(c => c.idAprendiz === usuarioActual.id);
+            
+            // Actualizar estadísticas
+            document.getElementById('totalComparendos').textContent = misComparendos.length;
+            
+            // Comparendos este mes
+            const mesActual = new Date().getMonth();
+            const comparendosMes = misComparendos.filter(c => {
+                const fechaComparendo = new Date(c.fecha);
+                return fechaComparendo.getMonth() === mesActual;
+            });
+            document.getElementById('comparendosMes').textContent = comparendosMes.length;
+            
+            // Estado del aprendiz
+            const estadoDiv = document.getElementById('estadoAprendiz');
+            if (misComparendos.length === 0) {
+                estadoDiv.innerHTML = '<span class="badge badge-success">Sin Comparendos</span>';
+            } else if (misComparendos.length === 1) {
+                estadoDiv.innerHTML = '<span class="badge badge-warning">1 Comparendo</span>';
+            } else {
+                estadoDiv.innerHTML = '<span class="badge badge-danger">Múltiples Comparendos</span>';
+            }
+            
+            // Mostrar alerta si hay 2 o más comparendos
+            const alertaDiv = document.getElementById('alertaComparendos');
+            if (misComparendos.length >= 2) {
+                alertaDiv.classList.remove('hidden');
+                alertaDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <strong>⚠️ Atención:</strong> Tienes ${misComparendos.length} comparendos registrados. 
+                        Te recomendamos hablar con el personal de bienestar para mejorar tu situación disciplinaria.
+                    </div>
+                `;
+            }
+            
+            // Mostrar tabla o mensaje
+            if (misComparendos.length === 0) {
+                document.getElementById('sinComparendos').classList.remove('hidden');
+                document.getElementById('conComparendos').classList.add('hidden');
+            } else {
+                document.getElementById('sinComparendos').classList.add('hidden');
+                document.getElementById('conComparendos').classList.remove('hidden');
+                
+                const tbody = document.getElementById('tablaComparendos');
+                tbody.innerHTML = misComparendos.map(comparendo => {
+                    const bienestar = usuarios.find(u => u.id === comparendo.idBienestar);
+                    const fecha = new Date(comparendo.fecha).toLocaleDateString('es-ES');
+                    
+                    let badgeClass = 'badge-info';
+                    if (comparendo.tipoInforme === 'Conducta') badgeClass = 'badge-danger';
+                    if (comparendo.tipoInforme === 'Asistencia') badgeClass = 'badge-warning';
+                    
+                    let evidenciaHTML = '<span style="color: var(--color-muted-foreground);">Sin evidencia</span>';
+                    if (comparendo.evidencia) {
+                        const extension = comparendo.evidenciaNombre ? comparendo.evidenciaNombre.split('.').pop().toLowerCase() : '';
+                        const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes(extension);
+                        
+                        if (isImage) {
+                            evidenciaHTML = `<a href="${comparendo.evidencia}" target="_blank" style="color: var(--color-primary);">🖼️ Ver imagen</a>`;
+                        } else {
+                            evidenciaHTML = `<a href="${comparendo.evidencia}" target="_blank" style="color: var(--color-primary);">📄 Ver documento</a>`;
+                        }
+                    }
+                    
+                    return `
+                        <tr>
+                            <td>${fecha}</td>
+                            <td><span class="badge ${badgeClass}">${comparendo.tipoInforme}</span></td>
+                            <td>${comparendo.descripcion}</td>
+                            <td>${bienestar ? bienestar.nombre : 'Desconocido'}</td>
+                            <td>${evidenciaHTML}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informes - SenaTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard">
+    <div class="dashboard-header">
+        <div class="dashboard-nav">
+            <a href="#" class="logo" onclick="volverDashboard()">
+                <img src="img\LogoST.png" alt="SenaTrack Logo" style="height: 50px; width: auto;">
+                <span>SenaTrack</span>
+            </a>
+            <div class="user-info">
+                <span id="nombreUsuario"></span>
+                <div class="user-avatar" id="avatarUsuario"></div>
+                <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Generación de Informes</h1>
+                <p style="color: var(--color-muted-foreground);">Visualiza comparendos filtrados por categoría</p>
+            </div>
+            <button class="btn btn-secondary" onclick="volverDashboard()">Volver al Dashboard</button>
+        </div>
+
+         Filtros 
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="card-title">Filtros de Búsqueda</h2>
+            </div>
+            <div class="grid grid-cols-3">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Informe</label>
+                    <select class="form-select" id="filtroTipo" onchange="aplicarFiltros()">
+                        <option value="">Todos</option>
+                        <option value="Conducta">Conducta</option>
+                        <option value="Asistencia">Asistencia</option>
+                        <option value="Rendimiento">Rendimiento</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha Desde</label>
+                    <input type="date" class="form-input" id="filtroFechaDesde" onchange="aplicarFiltros()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha Hasta</label>
+                    <input type="date" class="form-input" id="filtroFechaHasta" onchange="aplicarFiltros()">
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button class="btn btn-primary" onclick="aplicarFiltros()">Aplicar Filtros</button>
+                <button class="btn btn-secondary" onclick="limpiarFiltros()">Limpiar Filtros</button>
+                <button class="btn btn-primary" onclick="imprimirInforme()">Imprimir Informe</button>
+            </div>
+        </div>
+
+         Resumen Estadístico 
+        <div class="stats-grid mb-4">
+            <div class="stat-card">
+                <div class="stat-label">Total Comparendos</div>
+                <div class="stat-value" id="totalFiltrado">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Conducta</div>
+                <div class="stat-value" id="totalConducta">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Asistencia</div>
+                <div class="stat-value" id="totalAsistencia">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Rendimiento</div>
+                <div class="stat-value" id="totalRendimiento">0</div>
+            </div>
+        </div>
+
+         Comparendos por Categoría 
+        <div id="informesCategorias">
+             Se llenará dinámicamente 
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Verificar autenticación (solo bienestar y admin)
+        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+        if (!usuarioActual || (usuarioActual.tipoUsuario !== 'bienestar' && usuarioActual.tipoUsuario !== 'admin')) {
+            alert('No tienes permisos para acceder a esta página');
+            window.location.href = 'login.html';
+        }
+
+        // Cargar información del usuario
+        document.getElementById('nombreUsuario').textContent = usuarioActual.nombre;
+        document.getElementById('avatarUsuario').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
+
+        function volverDashboard() {
+            if (usuarioActual.tipoUsuario === 'admin') {
+                window.location.href = 'dashboard-admin.html';
+            } else {
+                window.location.href = 'dashboard-bienestar.html';
+            }
+        }
+
+        function aplicarFiltros() {
+            const comparendos = JSON.parse(localStorage.getItem('comparendos') || '[]');
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            
+            const filtroTipo = document.getElementById('filtroTipo').value;
+            const filtroFechaDesde = document.getElementById('filtroFechaDesde').value;
+            const filtroFechaHasta = document.getElementById('filtroFechaHasta').value;
+
+            // Aplicar filtros
+            let comparendosFiltrados = comparendos;
+
+            if (filtroTipo) {
+                comparendosFiltrados = comparendosFiltrados.filter(c => c.tipoInforme === filtroTipo);
+            }
+
+            if (filtroFechaDesde) {
+                comparendosFiltrados = comparendosFiltrados.filter(c => c.fecha >= filtroFechaDesde);
+            }
+
+            if (filtroFechaHasta) {
+                comparendosFiltrados = comparendosFiltrados.filter(c => c.fecha <= filtroFechaHasta);
+            }
+
+            // Actualizar estadísticas
+            document.getElementById('totalFiltrado').textContent = comparendosFiltrados.length;
+            document.getElementById('totalConducta').textContent = comparendosFiltrados.filter(c => c.tipoInforme === 'Conducta').length;
+            document.getElementById('totalAsistencia').textContent = comparendosFiltrados.filter(c => c.tipoInforme === 'Asistencia').length;
+            document.getElementById('totalRendimiento').textContent = comparendosFiltrados.filter(c => c.tipoInforme === 'Rendimiento').length;
+
+            // Agrupar por categoría
+            const categorias = ['Conducta', 'Asistencia', 'Rendimiento'];
+            const contenedor = document.getElementById('informesCategorias');
+            
+            contenedor.innerHTML = categorias.map(categoria => {
+                const comparendosCategoria = comparendosFiltrados.filter(c => c.tipoInforme === categoria);
+                
+                if (comparendosCategoria.length === 0 && filtroTipo && filtroTipo !== categoria) {
+                    return '';
+                }
+
+                return `
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h2 class="card-title">${categoria} (${comparendosCategoria.length})</h2>
+                        </div>
+                        ${comparendosCategoria.length > 0 ? `
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Aprendiz</th>
+                                            <th>Programa</th>
+                                            <th>Descripción</th>
+                                            <th>Registrado por</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${comparendosCategoria.map(comp => {
+                                            const aprendiz = usuarios.find(u => u.id === comp.idAprendiz);
+                                            const bienestar = usuarios.find(u => u.id === comp.idBienestar);
+                                            const fecha = new Date(comp.fecha).toLocaleDateString('es-ES');
+                                            
+                                            return `
+                                                <tr>
+                                                    <td>${fecha}</td>
+                                                    <td>${aprendiz ? aprendiz.nombre : 'Desconocido'}</td>
+                                                    <td>${aprendiz ? (aprendiz.programa || 'N/A') : 'N/A'}</td>
+                                                    <td>${comp.descripcion}</td>
+                                                    <td>${bienestar ? bienestar.nombre : 'Desconocido'}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : `
+                            <div style="padding: 2rem; text-align: center; color: var(--color-muted-foreground);">
+                                No hay comparendos registrados en esta categoría
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('filtroTipo').value = '';
+            document.getElementById('filtroFechaDesde').value = '';
+            document.getElementById('filtroFechaHasta').value = '';
+            aplicarFiltros();
+        }
+
+        function imprimirInforme() {
+            window.print();
+        }
+
+        // Cargar informes al iniciar
+        aplicarFiltros();
+    </script>
+
+    <style>
+        @media print {
+            .dashboard-header,
+            .btn,
+            .card:first-of-type {
+                display: none !important;
+            }
+            
+            body {
+                background: white;
+            }
+            
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</body>
+</html>
