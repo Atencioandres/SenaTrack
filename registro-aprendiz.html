@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registro de Aprendiz - SENATRACK</title>
+</head>
+<body>
+    <h2>Registro de Aprendiz</h2>
+    
+    <form action="Api/Backend/user_insert.php" method="POST">
+        <div>
+            <label>Nombres:</label>
+            <input type="text" name="nombres" required>
+        </div>
+        
+        <div>
+            <label>Apellidos:</label>
+            <input type="text" name="apellidos" required>
+        </div>
+        
+        <div>
+            <label>Número de Identificación:</label>
+            <input type="text" name="identificacion" required>
+        </div>
+        
+        <div>
+            <label>Número de Teléfono:</label>
+            <input type="tel" name="telefono" required>
+        </div>
+        
+        <div>
+            <label>Correo Electrónico:</label>
+            <input type="email" name="email" required>
+        </div>
+        
+        <input type="hidden" name="tipo_usuario" value="aprendiz">
+        
+        <button type="submit">Registrar Aprendiz</button>
+    </form>
+    
+    <br>
+    <a href="login.html">Volver al Login</a>
+</body>
+</html>

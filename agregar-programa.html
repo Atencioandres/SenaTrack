@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agregar Programa - SENATRACK</title>
+</head>
+<body>
+    <h2>Agregar Programa de Formación</h2>
+    
+    <form action="Api/Backend/agregar_programa.php" method="POST">
+        <div>
+            <label>Nombre del Programa:</label>
+            <input type="text" name="nombre_programa" required>
+        </div>
+        
+        <div>
+            <label>Número de Ficha:</label>
+            <input type="text" name="numero_ficha" required>
+        </div>
+        
+        <button type="submit">Agregar Programa</button>
+    </form>
+    
+    <br>
+    <a href="dashboard-admin.php">Volver al Dashboard</a>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registro de Bienestar - SENATRACK</title>
+</head>
+<body>
+    <h2>Registro de Personal de Bienestar</h2>
+    
+    <form action="Api/Backend/registro_bienestar.php" method="POST">
+        <div>
+            <label>Nombres:</label>
+            <input type="text" name="nombres" required>
+        </div>
+        
+        <div>
+            <label>Apellidos:</label>
+            <input type="text" name="apellidos" required>
+        </div>
+        
+        <div>
+            <label>Número de Identificación:</label>
+            <input type="text" name="identificacion" required>
+        </div>
+        
+        <div>
+            <label>Número de Teléfono:</label>
+            <input type="tel" name="telefono" required>
+        </div>
+        
+        <div>
+            <label>Correo Electrónico:</label>
+            <input type="email" name="email" required>
+        </div>
+        
+        <input type="hidden" name="tipo_usuario" value="bienestar">
+        
+        <button type="submit">Registrar Personal de Bienestar</button>
+    </form>
+    
+    <br>
+    <a href="dashboard-admin.php">Volver al Dashboard</a>
+</body>
+</html>
